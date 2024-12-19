@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Question Management</h1>
+    <form id="actionSelectorForm">
+        <label for="actionSelector">Choose an action:</label>
+        <select id="actionSelector" name="actionSelector">
+            <option value="ask">Ask a Question</option>
+            <option value="refine">Refine the Database</option>
+        </select>
+    </form>
+
+    <!-- Phase 1: Ask a Question Section -->
+    <div id="askQuestionSection" class="section">
+        <form id="questionForm">
+            <label for="questionInput">Enter your question:</label>
+            <input type="text" id="questionInput" name="question" placeholder="Type your question here..." required />
+            <button type="submit">Ask</button>
+        </form>
+        
+        <div id="answers" class="animated-section" style="display:none;">
+            <h3>Validate the Answer</h3>
+            <div class="grid-layout">
+                <!-- Left Section: Labels and Database Answer -->
+                <div class="left-section">
+                    <label>
+                        <input type="radio" name="answerValidation" value="correct">
+                        Database Answer:
+                    </label>
+                    <div id="dbAnswer" class="answer-text"></div>
+                </div>
+
+                <!-- Right Section: Input and Submit -->
+                <div class="right-section">
+                    <label>
+                        <input type="radio" name="answerValidation" value="custom">
+                        Provide a Correct Answer:
+                    </label>
+                    <textarea id="customAnswer" placeholder="Enter the correct answer here"></textarea>
+                </div>
+            </div>
+            <div class="button-center">
+                <button id="submitAnswer">Submit Answer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 2: Refine the Database Section -->
+    <div id="refineDatabaseSection" class="section" style="display:none;">
+        <h3>Refine Existing Questions</h3>
+        <div class="animated-section">
+            <label for="questionNumberInput">Select Question Number:</label>
+            <input type="text" id="questionNumberInput" placeholder="Enter question number" />
+            <button id="loadQuestionButton">Load</button>
+        </div>
+        <div id="questionAnswerSection" class="animated-section" style="display:none;">
+            <div>
+                <strong id="currentQuestionNumber" class="question-number"></strong>
+            </div>
+            <div id="currentQuestion" class="current-question"></div>
+            <div class="grid-layout">
+                <!-- Left Section: Labels and Database Answer -->
+                <div class="left-section">
+                    <label>
+                        <input type="radio" name="refineValidation" value="correct">
+                        Database Answer:
+                    </label>
+                    <div id="currentAnswer" class="answer-text"></div>
+                </div>
+    
+                <!-- Right Section: Input and Submit -->
+                <div class="right-section">
+                    <label>
+                        <input type="radio" name="refineValidation" value="custom">
+                        Provide a Correct Answer:
+                    </label>
+                    <textarea id="refineCustomAnswer" placeholder="Enter the correct answer here"></textarea>
+                </div>
+            </div>
+            <div class="button-center">
+                <button id="submitRefine">Submit and Next</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

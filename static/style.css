@@ -1,0 +1,165 @@
+/* General Reset */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Centering the main content */
+body > h1, #actionSelectorForm, #askQuestionSection, #refineDatabaseSection {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Main Heading */
+h1 {
+    text-align: center;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+/* Dropdown Selector Styling */
+#actionSelectorForm {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#actionSelectorForm label {
+    font-weight: bold;
+    margin-right: 10px;
+    font-size: 1rem;
+}
+
+#actionSelector {
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Form Fields Styling */
+input[type="text"], textarea {
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 95%;
+}
+
+input[type="text"]:focus, textarea:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+textarea {
+    resize: vertical;
+    height: 120px;
+}
+
+/* Grid Layout for Answer Sections */
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 20px; /* Space between columns */
+    align-items: start; /* Align items at the top */
+    margin-top: 20px;
+}
+
+/* Left Section for Labels and Database Answer */
+.left-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.answer-text {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #555;
+    white-space: pre-wrap; /* Preserve formatting for multiline answers */
+}
+
+/* Right Section for Input */
+.right-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Buttons */
+button {
+    padding: 12px 20px;
+    margin-top: 15px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+/* Button for Question Number Section */
+#loadQuestionButton {
+    margin-top: 10px;
+    background-color: #007BFF;
+    color: white;
+}
+
+#loadQuestionButton:hover {
+    background-color: #0056b3;
+}
+
+/* Centered Submit Button */
+.button-center {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Input Section for Entering Question Numbers */
+.animated-section label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+}
+
+input[type="text"]#questionNumberInput {
+    max-width: 200px;
+    margin-bottom: 10px;
+}
+
+/* Animated Section */
+.animated-section {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
