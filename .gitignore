@@ -1,0 +1,4 @@
+new_venv/
+*.dll
+*.lib
+*.log
