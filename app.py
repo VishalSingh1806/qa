@@ -21,7 +21,7 @@ DB_CONFIG = {
     'user': 'singh',
     'password': 'Tech123',
     'database': 'knowledge_base',
-    'host': '192.168.153.169',  # Replace with your server IP or hostname if needed
+    'host': 'localhost',  # Replace with your server IP or hostname if needed
     'port': 5432
 }
 
