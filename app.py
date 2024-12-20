@@ -21,15 +21,12 @@ DB_CONFIG = {
     'user': 'postgres',
     'password': 'Tech123',
     'database': 'postgres',
-    'host': '34.100.134.186',
-    'port': 5432
+    'host': '34.100.134.186',  # Public IP of your GCP PostgreSQL instance
+    'port': 5432  # Default PostgreSQL port
 }
 
 SIMILARITY_THRESHOLD = 0.5
 logging.basicConfig(level=logging.DEBUG)
-
-# Global variable for preloaded data
-preloaded_data = []
 
 # --- Database Repository ---
 class DatabaseRepository:
@@ -62,18 +59,6 @@ def compute_embedding(text):
     embedding = model.encode(text).reshape(1, -1)
     return embedding
 
-async def preload_database():
-    """Load all data from the database into memory once."""
-    global preloaded_data
-    try:
-        preloaded_data = await db_repo.execute_query(
-            "SELECT question, answer, embedding FROM ValidatedQA", fetch_all=True
-        )
-        logging.debug(f"Preloaded data: {preloaded_data}")
-    except Exception as e:
-        logging.error(f"Error fetching questions from the database: {e}")
-        preloaded_data = []
-
 async def save_or_update_question(db_repo, question, answer, embedding):
     """Save or update a QA pair in the database."""
     try:
@@ -97,32 +82,39 @@ async def save_or_update_question(db_repo, question, answer, embedding):
             )
 
         logging.debug("Successfully saved or updated question in database.")
-        # Reload the preloaded data after database update
-        await preload_database()
     except Exception as e:
         logging.error(f"Error saving or updating question in database: {e}")
         raise
 
 async def fetch_best_match(user_embedding):
-    """Search the preloaded data for the best match."""
+    """Search the database for the best match."""
     max_similarity = 0.0
     best_answer = None
 
-    for row in preloaded_data:
-        db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
-        if db_embedding_array.shape[0] > 384:
-            db_embedding_array = db_embedding_array[:384]  # Truncate if needed
+    # Query the database for all questions and embeddings
+    query = "SELECT question, answer, embedding FROM ValidatedQA"
+    try:
+        rows = await db_repo.execute_query(query, fetch_all=True)
+        
+        for row in rows:
+            db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
+            if db_embedding_array.shape[0] > 384:
+                db_embedding_array = db_embedding_array[:384]  # Truncate if needed
 
-        similarity = cosine_similarity(user_embedding.reshape(1, -1), db_embedding_array.reshape(1, -1))[0][0]
+            similarity = cosine_similarity(user_embedding.reshape(1, -1), db_embedding_array.reshape(1, -1))[0][0]
 
-        if similarity > max_similarity:
-            max_similarity = similarity
-            best_answer = row['answer']
+            if similarity > max_similarity:
+                max_similarity = similarity
+                best_answer = row['answer']
 
-    if max_similarity >= SIMILARITY_THRESHOLD:
-        return best_answer, float(max_similarity)
-    else:
+        if max_similarity >= SIMILARITY_THRESHOLD:
+            return best_answer, float(max_similarity)
+        else:
+            return None, 0.0
+    except Exception as e:
+        logging.error(f"Error in fetching match: {e}")
         return None, 0.0
+
 
 # --- Flask Routes ---
 @app.route("/")
@@ -131,11 +123,11 @@ def index():
 
 @app.route("/questions", methods=["GET"])
 async def get_questions():
-    """Fetch all questions from the preloaded data."""
+    """Fetch all questions from the database."""
     try:
-        if not preloaded_data:
-            await preload_database()
-        questions = [{"question": row['question'], "answer": row['answer']} for row in preloaded_data]
+        query = "SELECT question, answer FROM ValidatedQA"
+        rows = await db_repo.execute_query(query, fetch_all=True)
+        questions = [{"question": row['question'], "answer": row['answer']} for row in rows]
         logging.debug(f"Fetched questions: {questions}")
         return jsonify({"questions": questions})
     except Exception as e:
@@ -144,7 +136,7 @@ async def get_questions():
 
 @app.route("/ask", methods=["POST"])
 async def ask():
-    """Handle a question and return the answer from the preloaded data."""
+    """Handle a question and return the answer from the database."""
     try:
         data = request.json
         question = data.get("question", "").strip()
@@ -154,10 +146,9 @@ async def ask():
         # Generate embedding for user query
         user_embedding = compute_embedding(question)
 
-        # Query preloaded data for the best match
+        # Query the database for the best match
         db_answer, confidence = await fetch_best_match(user_embedding)
 
-        # Return the database answer for validation
         return jsonify({
             "database": db_answer or "No match found in database.",
             "confidence": confidence
@@ -194,11 +185,4 @@ asgi_app = WsgiToAsgi(app)
 
 # --- Run App ---
 if __name__ == "__main__":
-    async def ensure_table():
-        try:
-            await preload_database()  # Preload data only once at startup
-        except Exception as e:
-            logging.error(f"Error ensuring database table exists: {e}")
-
-    asyncio.run(ensure_table())
     app.run(debug=True)
