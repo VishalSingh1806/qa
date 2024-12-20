@@ -25,8 +25,6 @@ DB_CONFIG = {
     'port': 5432  # Default PostgreSQL port
 }
 
-
-
 SIMILARITY_THRESHOLD = 0.7
 logging.basicConfig(level=logging.DEBUG)
 
@@ -68,9 +66,10 @@ def compute_embedding(text):
 
 
 async def preload_database():
-    """Load all data from the database into memory."""
+    """Load all data from the database into memory once."""
     global preloaded_data
     try:
+        # Fetch questions and embeddings from database
         preloaded_data = await db_repo.execute_query(
             "SELECT question, answer, embedding FROM ValidatedQA", fetch_all=True
         )
@@ -78,26 +77,6 @@ async def preload_database():
     except Exception as e:
         logging.error(f"Error fetching questions from the database: {e}")
         preloaded_data = []
-
-
-
-async def initialize_database():
-    """Initialize the database using schema and seed data files."""
-    try:
-        # Load and execute schema
-        with open("schema.sql", "r") as schema_file:
-            schema = schema_file.read()
-        await db_repo.execute_query(schema)
-
-        # Load and execute seed data
-        with open("seed_data.sql", "r") as seed_file:
-            seed_data = seed_file.read()
-        await db_repo.execute_query(seed_data)
-
-        logging.info("Database initialized successfully from SQL files.")
-    except Exception as e:
-        logging.error(f"Error initializing database from SQL files: {e}")
-        raise
 
 
 async def save_or_update_question(db_repo, question, answer, embedding):
@@ -135,6 +114,7 @@ async def fetch_best_match(user_embedding):
     max_similarity = 0.0
     best_answer = None
 
+    # Compare the input user_embedding to all the preloaded data
     for row in preloaded_data:
         db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32).reshape(1, -1)
         similarity = cosine_similarity(user_embedding, db_embedding_array)[0][0]
@@ -235,8 +215,7 @@ if __name__ == "__main__":
     # Ensure the database table exists
     async def ensure_table():
         try:
-            await initialize_database()
-            await preload_database()  # Preload data on startup
+            await preload_database()  # Preload data only once at startup
         except Exception as e:
             logging.error(f"Error ensuring database table exists: {e}")
 
