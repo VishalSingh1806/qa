@@ -62,13 +62,11 @@ def compute_embedding(text):
     embedding = model.encode(text).reshape(1, -1)
     return embedding
 
-
-
 async def preload_database():
     """Load all data from the database into memory once."""
     global preloaded_data
     try:
-        # Fetch questions and embeddings from database
+        # Fetch questions and embeddings from the database
         preloaded_data = await db_repo.execute_query(
             "SELECT question, answer, embedding FROM ValidatedQA", fetch_all=True
         )
@@ -76,7 +74,6 @@ async def preload_database():
     except Exception as e:
         logging.error(f"Error fetching questions from the database: {e}")
         preloaded_data = []
-
 
 async def save_or_update_question(db_repo, question, answer, embedding):
     """Save or update a QA pair in the database."""
@@ -102,7 +99,6 @@ async def save_or_update_question(db_repo, question, answer, embedding):
             )
 
         logging.debug("Successfully saved or updated question in database.")
-        await preload_database()  # Reload data after every update
     except Exception as e:
         logging.error(f"Error saving or updating question in database: {e}")
         raise
@@ -188,19 +184,8 @@ async def add_to_database():
         # Add or update the question-answer pair in the database
         await save_or_update_question(db_repo, question, answer, embedding)
 
-        # Verify the update
-        updated_entry = await db_repo.execute_query(
-            "SELECT id, question, answer FROM ValidatedQA WHERE question = $1",
-            (question,),
-            fetch_one=True,
-        )
-
-        if not updated_entry:
-            logging.error(f"Failed to update or find the question: {question}")
-            return jsonify({"error": "Failed to update the question in the database."}), 500
-
-        logging.debug(f"Updated entry: {updated_entry}")
-        return jsonify({"message": "Answer submitted and saved successfully!", "updated_entry": dict(updated_entry)})
+        logging.debug(f"Question '{question}' added/updated successfully.")
+        return jsonify({"message": "Answer submitted and saved successfully!"})
     except Exception as e:
         logging.error(f"Error in /add route: {e}")
         return jsonify({"error": "Internal server error"}), 500
