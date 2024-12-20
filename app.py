@@ -114,10 +114,15 @@ async def fetch_best_match(user_embedding):
     max_similarity = 0.0
     best_answer = None
 
-    # Compare the input user_embedding to all the preloaded data
     for row in preloaded_data:
-        db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32).reshape(1, -1)
-        similarity = cosine_similarity(user_embedding, db_embedding_array)[0][0]
+        # Ensure embeddings are the same dimension
+        db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
+        
+        # Truncate or reshape the embeddings to 384 dimensions if the db has 512
+        if db_embedding_array.shape[0] > 384:
+            db_embedding_array = db_embedding_array[:384]  # Truncate to 384 if 512
+        
+        similarity = cosine_similarity(user_embedding, db_embedding_array.reshape(1, -1))[0][0]
         if similarity > max_similarity:
             max_similarity = similarity
             best_answer = row['answer']
@@ -125,6 +130,7 @@ async def fetch_best_match(user_embedding):
     if max_similarity >= SIMILARITY_THRESHOLD:
         return best_answer, float(max_similarity)
     return None, 0.0
+
 
 
 # --- Flask Routes ---
