@@ -25,7 +25,7 @@ DB_CONFIG = {
     'port': 5432  # Default PostgreSQL port
 }
 
-SIMILARITY_THRESHOLD = 0.7
+SIMILARITY_THRESHOLD = 0.5
 logging.basicConfig(level=logging.DEBUG)
 
 # Global variable for preloaded data
@@ -59,7 +59,10 @@ db_repo = DatabaseRepository(DB_CONFIG)
 # --- Utility Functions ---
 def compute_embedding(text):
     """Compute embedding using Sentence-BERT."""
-    return model.encode(text).reshape(1, -1)  # Ensure 384 dimensions
+    embedding = model.encode(text).reshape(1, -1)  # Ensure 384 dimensions
+    logging.debug(f"Embedding for question '{text}': {embedding}")
+    return embedding
+
 
 async def preload_database():
     """Load all data from the database into memory once."""
@@ -111,15 +114,17 @@ async def fetch_best_match(user_embedding):
     for row in preloaded_data:
         db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
         
-        # Ensure embeddings are the same dimension
+        # Ensure embeddings are the same dimension (384 in your case)
         if db_embedding_array.shape[0] > 384:
             db_embedding_array = db_embedding_array[:384]  # Truncate to 384 if 512
+            
+        # Log both embeddings for debugging
+        logging.debug(f"User Embedding: {user_embedding}")
+        logging.debug(f"DB Embedding: {db_embedding_array}")
         
         # Calculate cosine similarity
         similarity = cosine_similarity(user_embedding, db_embedding_array.reshape(1, -1))[0][0]
         
-        logging.debug(f"User Embedding: {user_embedding}")
-        logging.debug(f"DB Embedding: {db_embedding_array}")
         logging.debug(f"Similarity: {similarity}")
 
         if similarity > max_similarity:
@@ -127,9 +132,11 @@ async def fetch_best_match(user_embedding):
             best_answer = row['answer']
 
     if max_similarity >= SIMILARITY_THRESHOLD:
+        logging.debug(f"Best match found with similarity: {max_similarity}")
         return best_answer, float(max_similarity)
-    return None, 0.0
-
+    else:
+        logging.debug(f"No match found. Max similarity: {max_similarity}")
+        return None, 0.0
 
 # --- Flask Routes ---
 @app.route("/")
