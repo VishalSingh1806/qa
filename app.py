@@ -18,12 +18,13 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Database constants
 DB_CONFIG = {
-    'user': 'jonny',
-    'password': 'Tech123',
-    'database': 'knowledge_base2',
-    'host': '34.100.134.186',  # Replace with your Cloud SQL instance's public IP
+    'user': 'postgres',  # Replace with your PostgreSQL user
+    'password': 'Tech123',  # Replace with your PostgreSQL password
+    'database': 'postgres',  # Replace with your database name, e.g., knowledge_base2
+    'host': '34.100.134.186',  # This is the public IP of your GCP PostgreSQL instance
     'port': 5432  # Default PostgreSQL port
 }
+
 
 
 SIMILARITY_THRESHOLD = 0.7
