@@ -112,11 +112,6 @@ async def fetch_best_match(user_embedding):
     max_similarity = 0.0
     best_answer = None
 
- async def fetch_best_match(user_embedding):
-    """Query the preloaded data for the best match."""
-    max_similarity = 0.0
-    best_answer = None
-
     for row in preloaded_data:
         db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
         if db_embedding_array.shape[0] > 384:
@@ -132,7 +127,6 @@ async def fetch_best_match(user_embedding):
         return best_answer, float(max_similarity)
     else:
         return None, 0.0
-
 
 
 # --- Flask Routes ---
