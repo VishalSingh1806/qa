@@ -77,6 +77,7 @@ async def preload_database():
         logging.error(f"Error fetching questions from the database: {e}")
         preloaded_data = []
 
+
 async def save_or_update_question(db_repo, question, answer, embedding):
     """Save or update a QA pair in the database."""
     try:
@@ -114,10 +115,10 @@ async def fetch_best_match(user_embedding):
     for row in preloaded_data:
         db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
         
-        # Ensure embeddings are the same dimension (384 in your case)
+        # Ensure embeddings are the same dimension (384 in your case, or keep 512 if needed)
         if db_embedding_array.shape[0] > 384:
             db_embedding_array = db_embedding_array[:384]  # Truncate to 384 if 512
-            
+        
         # Log both embeddings for debugging
         logging.debug(f"User Embedding: {user_embedding}")
         logging.debug(f"DB Embedding: {db_embedding_array}")
@@ -137,6 +138,7 @@ async def fetch_best_match(user_embedding):
     else:
         logging.debug(f"No match found. Max similarity: {max_similarity}")
         return None, 0.0
+
 
 # --- Flask Routes ---
 @app.route("/")
