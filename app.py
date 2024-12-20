@@ -21,8 +21,8 @@ DB_CONFIG = {
     'user': 'postgres',
     'password': 'Tech123',
     'database': 'postgres',
-    'host': '34.100.134.186',  
-    'port': 5432  
+    'host': '34.100.134.186',
+    'port': 5432
 }
 
 SIMILARITY_THRESHOLD = 0.5
@@ -66,7 +66,6 @@ async def preload_database():
     """Load all data from the database into memory once."""
     global preloaded_data
     try:
-        # Fetch questions and embeddings from database
         preloaded_data = await db_repo.execute_query(
             "SELECT question, answer, embedding FROM ValidatedQA", fetch_all=True
         )
@@ -98,17 +97,17 @@ async def save_or_update_question(db_repo, question, answer, embedding):
             )
 
         logging.debug("Successfully saved or updated question in database.")
-        await preload_database()  # Reload data after every update
+        # Reload the preloaded data after database update
+        await preload_database()
     except Exception as e:
         logging.error(f"Error saving or updating question in database: {e}")
         raise
 
 async def fetch_best_match(user_embedding):
-    """Query the preloaded data for the best match."""
+    """Search the preloaded data for the best match."""
     max_similarity = 0.0
     best_answer = None
 
-    # Searching in preloaded data
     for row in preloaded_data:
         db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
         if db_embedding_array.shape[0] > 384:
