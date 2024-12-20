@@ -18,11 +18,11 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Database constants
 DB_CONFIG = {
-    'user': 'postgres',  # Replace with your PostgreSQL user
-    'password': 'Tech123',  # Replace with your PostgreSQL password
-    'database': 'postgres',  # Replace with your database name
-    'host': '34.100.134.186',  # Public IP of your GCP PostgreSQL instance
-    'port': 5432  # Default PostgreSQL port
+    'user': 'postgres',
+    'password': 'Tech123',
+    'database': 'postgres',
+    'host': '34.100.134.186',  
+    'port': 5432  
 }
 
 SIMILARITY_THRESHOLD = 0.5
@@ -66,7 +66,7 @@ async def preload_database():
     """Load all data from the database into memory once."""
     global preloaded_data
     try:
-        # Fetch questions and embeddings from the database
+        # Fetch questions and embeddings from database
         preloaded_data = await db_repo.execute_query(
             "SELECT question, answer, embedding FROM ValidatedQA", fetch_all=True
         )
@@ -78,7 +78,6 @@ async def preload_database():
 async def save_or_update_question(db_repo, question, answer, embedding):
     """Save or update a QA pair in the database."""
     try:
-        # Check if the question exists in the database
         existing_entry = await db_repo.execute_query(
             "SELECT id FROM ValidatedQA WHERE question = $1",
             (question,),
@@ -99,6 +98,7 @@ async def save_or_update_question(db_repo, question, answer, embedding):
             )
 
         logging.debug("Successfully saved or updated question in database.")
+        await preload_database()  # Reload data after every update
     except Exception as e:
         logging.error(f"Error saving or updating question in database: {e}")
         raise
@@ -108,6 +108,7 @@ async def fetch_best_match(user_embedding):
     max_similarity = 0.0
     best_answer = None
 
+    # Searching in preloaded data
     for row in preloaded_data:
         db_embedding_array = np.frombuffer(row['embedding'], dtype=np.float32)
         if db_embedding_array.shape[0] > 384:
@@ -123,7 +124,6 @@ async def fetch_best_match(user_embedding):
         return best_answer, float(max_similarity)
     else:
         return None, 0.0
-
 
 # --- Flask Routes ---
 @app.route("/")
@@ -195,7 +195,6 @@ asgi_app = WsgiToAsgi(app)
 
 # --- Run App ---
 if __name__ == "__main__":
-    # Ensure the database table exists
     async def ensure_table():
         try:
             await preload_database()  # Preload data only once at startup
