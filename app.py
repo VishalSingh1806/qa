@@ -13,15 +13,15 @@ import logging
 app = Flask(__name__)
 CORS(app)
 
-# Load Sentence-BERT model
+# Load Sentence-BERT model globally
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Database constants
 DB_CONFIG = {
     'user': 'postgres',  # Replace with your PostgreSQL user
     'password': 'Tech123',  # Replace with your PostgreSQL password
-    'database': 'postgres',  # Replace with your database name, e.g., knowledge_base2
-    'host': '34.100.134.186',  # This is the public IP of your GCP PostgreSQL instance
+    'database': 'postgres',  # Replace with your database name
+    'host': '34.100.134.186',  # Public IP of your GCP PostgreSQL instance
     'port': 5432  # Default PostgreSQL port
 }
 
@@ -30,7 +30,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Global variable for preloaded data
 preloaded_data = []
-
 
 # --- Database Repository ---
 class DatabaseRepository:
@@ -54,16 +53,13 @@ class DatabaseRepository:
         finally:
             await conn.close()
 
-
 # Initialize repository
 db_repo = DatabaseRepository(DB_CONFIG)
-
 
 # --- Utility Functions ---
 def compute_embedding(text):
     """Compute embedding using Sentence-BERT."""
     return model.encode(text).reshape(1, -1)  # Ensure 384 dimensions
-
 
 async def preload_database():
     """Load all data from the database into memory once."""
@@ -77,7 +73,6 @@ async def preload_database():
     except Exception as e:
         logging.error(f"Error fetching questions from the database: {e}")
         preloaded_data = []
-
 
 async def save_or_update_question(db_repo, question, answer, embedding):
     """Save or update a QA pair in the database."""
@@ -108,7 +103,6 @@ async def save_or_update_question(db_repo, question, answer, embedding):
         logging.error(f"Error saving or updating question in database: {e}")
         raise
 
-
 async def fetch_best_match(user_embedding):
     """Query the preloaded data for the best match."""
     max_similarity = 0.0
@@ -131,13 +125,10 @@ async def fetch_best_match(user_embedding):
         return best_answer, float(max_similarity)
     return None, 0.0
 
-
-
 # --- Flask Routes ---
 @app.route("/")
 def index():
     return render_template("index.html")
-
 
 @app.route("/questions", methods=["GET"])
 async def get_questions():
@@ -151,7 +142,6 @@ async def get_questions():
     except Exception as e:
         logging.error(f"Error fetching questions: {e}")
         return jsonify({"error": "Failed to fetch questions"}), 500
-
 
 @app.route("/ask", methods=["POST"])
 async def ask():
@@ -176,7 +166,6 @@ async def ask():
     except Exception as e:
         logging.error(f"Error in /ask route: {e}")
         return jsonify({"error": "Internal server error"}), 500
-
 
 @app.route("/add", methods=["POST"])
 async def add_to_database():
@@ -211,7 +200,6 @@ async def add_to_database():
     except Exception as e:
         logging.error(f"Error in /add route: {e}")
         return jsonify({"error": "Internal server error"}), 500
-
 
 # Wrap Flask app as ASGI for Uvicorn
 asgi_app = WsgiToAsgi(app)
