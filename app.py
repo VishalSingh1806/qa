@@ -18,12 +18,13 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Database constants
 DB_CONFIG = {
-    'user': 'singh',
+    'user': 'jonny',
     'password': 'Tech123',
-    'database': 'knowledge_base',
-    'host': 'localhost',  # Replace with your server IP or hostname if needed
-    'port': 5432
+    'database': 'knowledge_base2',
+    'host': '34.100.134.186',  # Replace with your Cloud SQL instance's public IP
+    'port': 5432  # Default PostgreSQL port
 }
+
 
 SIMILARITY_THRESHOLD = 0.7
 logging.basicConfig(level=logging.DEBUG)
