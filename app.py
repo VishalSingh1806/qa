@@ -69,11 +69,15 @@ def compute_embedding(text):
 async def preload_database():
     """Load all data from the database into memory."""
     global preloaded_data
-    preloaded_data = await db_repo.execute_query(
-        "SELECT question, answer, embedding FROM ValidatedQA", fetch_all=True
-    )
-    logging.debug("Database successfully preloaded.")
-    logging.debug(f"Current preloaded data: {preloaded_data}")
+    try:
+        preloaded_data = await db_repo.execute_query(
+            "SELECT question, answer, embedding FROM ValidatedQA", fetch_all=True
+        )
+        logging.debug(f"Preloaded data: {preloaded_data}")
+    except Exception as e:
+        logging.error(f"Error fetching questions from the database: {e}")
+        preloaded_data = []
+
 
 
 async def initialize_database():
