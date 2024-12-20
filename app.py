@@ -25,7 +25,7 @@ DB_CONFIG = {
     'port': 5432  # Default PostgreSQL port
 }
 
-SIMILARITY_THRESHOLD = 0.5
+SIMILARITY_THRESHOLD = 0.7
 logging.basicConfig(level=logging.DEBUG)
 
 # --- Database Repository ---
